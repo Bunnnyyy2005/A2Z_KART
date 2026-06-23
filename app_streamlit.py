@@ -18,7 +18,7 @@ try:
     os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 except:
     # Local ga run chesetappudu idi vaadukuntundi (GitHub lo pedithe ee kinda string ni empty chesey boss)
-    os.environ["GROQ_API_KEY"] = "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"
+    os.environ["GROQ_API_KEY"] = "----------"
 
 DB_NAME = 'ecommerce.db'
 
