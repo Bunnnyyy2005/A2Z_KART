@@ -24,37 +24,73 @@ DB_NAME = 'ecommerce.db'
 
 link1 = "https://www.instagram.com/_bunnnyyy_._/"
 # --- 2. DATABASE UPGRADE (Automatically add image_url column if not exists) ---
-def upgrade_db():
+def setup_database():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
+    
+    # 1. Create Core Tables (For Fresh Cloud Deployment)
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Users (
+        user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        email TEXT UNIQUE,
+        phone_no TEXT,
+        password TEXT,
+        vault REAL DEFAULT 0.0
+    )''')
+    
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Items (
+        item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        item_name TEXT,
+        specifications TEXT,
+        ratings REAL,
+        price REAL,
+        image_url TEXT DEFAULT ''
+    )''')
+    
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Orders (
+        order_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_group_id TEXT DEFAULT '',
+        customer_name TEXT,
+        user_id INTEGER,
+        item_id INTEGER,
+        order_name TEXT,
+        status TEXT,
+        price REAL,
+        quantity INTEGER DEFAULT 1,
+        order_date TEXT DEFAULT ''
+    )''')
+    
+    cursor.execute('''CREATE TABLE IF NOT EXISTS App_Vault (
+        id INTEGER PRIMARY KEY,
+        total_amount REAL DEFAULT 0.0
+    )''')
+    # Insert initial app vault balance if empty
+    cursor.execute("INSERT OR IGNORE INTO App_Vault (id, total_amount) VALUES (1, 0.0)")
+    
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Settings (
+        setting_key TEXT UNIQUE, 
+        setting_value TEXT
+    )''')
+    cursor.execute("INSERT OR IGNORE INTO Settings (setting_key, setting_value) VALUES ('recharge_link', 'https://www.google.com')")
+    
+    conn.commit()
+    
+    # 2. Upgrade existing tables (Adding new columns if they don't exist)
     try:
         cursor.execute("ALTER TABLE Items ADD COLUMN image_url TEXT DEFAULT ''")
         conn.commit()
-    except sqlite3.OperationalError:
-        pass # Column already exists, so ignore
+    except sqlite3.OperationalError: pass
     
-    # Orders table ki order_date column add chesthunnam
     try:
         cursor.execute("ALTER TABLE Orders ADD COLUMN order_date TEXT DEFAULT ''")
         conn.commit()
-    except sqlite3.OperationalError:
-        pass
-        
-    # Quantity and Order Group ID add chesthunnam for multiple items mapping
+    except sqlite3.OperationalError: pass
+    
     try:
         cursor.execute("ALTER TABLE Orders ADD COLUMN quantity INTEGER DEFAULT 1")
         cursor.execute("ALTER TABLE Orders ADD COLUMN order_group_id TEXT DEFAULT ''")
         conn.commit()
-    except sqlite3.OperationalError:
-        pass
-        
-    # Recharge link kosam Settings table add chesthunnam
-    try:
-        cursor.execute("CREATE TABLE IF NOT EXISTS Settings (setting_key TEXT UNIQUE, setting_value TEXT)")
-        cursor.execute("INSERT OR IGNORE INTO Settings (setting_key, setting_value) VALUES ('recharge_link', 'https://www.instagram.com/_bunnnyyy_._/')")
-        conn.commit()
-    except sqlite3.OperationalError:
-        pass
+    except sqlite3.OperationalError: pass
         
     conn.close()
 
@@ -77,7 +113,7 @@ def update_old_orders():
     except:
         pass
 
-upgrade_db() # Call it at startup
+setup_database() # Call it at startup to ensure tables exist
 update_old_orders() # Update expired orders status
 
 # Streamlit UI CSS
