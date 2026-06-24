@@ -698,7 +698,7 @@ elif st.session_state.step == "main":
                 confirm with the user once by asking "Are you sure you want to [action]?" and make them enter their password to proceed. 
                 Only proceed if the provided password exactly matches {st.session_state.user_password}, otherwise cancel it and inform the user about incorrect password.
                 Do not execute any action without this confirmation step.
-                Communication should be not too long, friendly, and English only.
+                Communication should be friendly and English only.
                 
                  CRITICAL RULES (MUST FOLLOW STRICTLY):
                 1. NO RAW TAGS: NEVER output raw function call syntax (e.g., `<function=...>`, JSON blocks) in your text responses. Just talk naturally.
