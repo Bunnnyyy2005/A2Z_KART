@@ -21,7 +21,7 @@ except Exception as e:
 def get_db_connection():
     return psycopg2.connect(os.environ["DATABASE_URL"])
 
-# PostgreSQL Database Setup
+@st.cache_resource
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -55,6 +55,7 @@ def init_db():
     conn.commit()
     conn.close()
 
+@st.cache_data(ttl=60)
 def update_old_orders():
     from datetime import datetime, timedelta
     try:
