@@ -1,14 +1,15 @@
 from langchain_core.tools import tool
-import sqlite3
+import psycopg2
 import pandas as pd
+import os
 
-DB_NAME = 'ecommerce.db'
+def get_db_connection():
+    return psycopg2.connect(os.environ["DATABASE_URL"])
 
 @tool
 def get_item_catalog():
     """Returns the list of available items, their IDs, specifications, ratings, and prices."""
-    conn = sqlite3.connect(DB_NAME)
-    # Ikkada SQL query lo 'ratings' kooda add chesam
+    conn = get_db_connection()
     df = pd.read_sql_query("SELECT item_id, item_name, price, specifications, ratings FROM Items", conn)
     conn.close()
     return df.to_string(index=False)
@@ -16,9 +17,9 @@ def get_item_catalog():
 @tool
 def check_vault_balance(user_id: int):
     """Checks the vault balance for a given user_id."""
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT vault FROM Users WHERE user_id = ?", (user_id,))
+    cursor.execute("SELECT vault FROM Users WHERE user_id = %s", (user_id,))
     val = cursor.fetchone()
     conn.close()
     return f"Vault Balance: ₹{val[0]}" if val else "User not found."
